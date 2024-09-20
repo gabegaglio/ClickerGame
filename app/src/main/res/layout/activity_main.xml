@@ -56,6 +56,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|center"
+                android:layout_marginBottom="20dp"
                 android:gravity="center"
                 android:hapticFeedbackEnabled="true"
                 android:text="Start"
@@ -63,11 +64,11 @@
                 android:textSize="40sp" />
 
             <Button
-                android:id="@+id/counterBtn2"
+                android:id="@+id/counterBtn1"
                 android:layout_width="wrap_content"
-                android:layout_height="73dp"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginBottom="40dp"
+                android:layout_marginBottom="60dp"
                 android:gravity="center"
                 android:hapticFeedbackEnabled="true"
                 android:text="+"
@@ -75,11 +76,11 @@
                 android:textSize="30sp" />
 
             <Button
-                android:id="@+id/counterBtn1"
+                android:id="@+id/counterBtn2"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="73dp"
                 android:layout_gravity="center"
-                android:layout_marginTop="40dp"
+                android:layout_marginTop="60dp"
                 android:gravity="center"
                 android:hapticFeedbackEnabled="true"
                 android:text="+"

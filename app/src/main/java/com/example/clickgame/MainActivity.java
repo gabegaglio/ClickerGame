@@ -8,7 +8,10 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -29,9 +32,11 @@ public class MainActivity extends AppCompatActivity {
         timer = findViewById(R.id.timer);
         counter = findViewById(R.id.counter);
         highScoreTV = findViewById(R.id.highScore);
+        FrameLayout frame = findViewById(R.id.frame);
 
         counterBtn1.setEnabled(false);
         counterBtn2.setEnabled(false);
+        counter.setVisibility(View.INVISIBLE);
 
         // get high score from shared preferences
         SharedPreferences sharedPreferences = getSharedPreferences("MyPreferences", MODE_PRIVATE);
@@ -39,14 +44,14 @@ public class MainActivity extends AppCompatActivity {
         highScoreTV.setText("High Score: " + highScore);
 
         // create button handler class
-        ButtonHandler buttonHandler = new ButtonHandler(counterBtn1.getRootView(), counterBtn1, counterBtn2);
+        ButtonHandler buttonHandler = new ButtonHandler(frame, counterBtn1, counterBtn2);
 
         CountDownTimer time = new CountDownTimer(20000, 1000) {
             @SuppressLint("SetTextI18n")
             @Override
             public void onTick(long l) {
                 timeLeft--;
-                timer.setText("Time: " + timeLeft + "s");
+                timer.setText(timeLeft.toString() + "s");
             }
 
             @SuppressLint("SetTextI18n")
@@ -56,11 +61,9 @@ public class MainActivity extends AppCompatActivity {
                 counterBtn2.setEnabled(false);
                 startBtn.setEnabled(true);
                 startBtn.setVisibility(View.VISIBLE);
+                timer.setText("20s");
 
-                // parse clicks from counter to get score int
-                String counterText = counter.getText().toString();
-                String[] parts = counterText.split("Clicks: ");
-                int newScore = Integer.parseInt(parts[1].trim());
+                int newScore = Integer.parseInt(counter.getText().toString());
 
                 if (score == -1 || newScore > score) {
                     score = newScore;
@@ -70,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putInt("highScore", score);
                     editor.apply();
+                    Toast.makeText(MainActivity.this, "New High Score: "+ score, Toast.LENGTH_LONG).show();
                 }
             }
         };
@@ -81,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
                 buttonHandler.moveBtn(counterBtn1);
                 buttonHandler.toggleBtn(); //doesnt need to be passed in since btn1 always starts off enabled
                 count++;
-                counter.setText("Clicks: " + count);
+                counter.setText(count.toString());
             }
         });
 
@@ -92,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                 buttonHandler.moveBtn(counterBtn2);
                 buttonHandler.toggleBtn();
                 count++;
-                counter.setText("Clicks: " + count);
+                counter.setText(count.toString());
             }
         });
 
@@ -104,11 +108,12 @@ public class MainActivity extends AppCompatActivity {
                 time.start();
                 startBtn.setEnabled(false);
                 startBtn.setVisibility(View.INVISIBLE);
+                counter.setVisibility(View.VISIBLE);
                 counterBtn1.setEnabled(true);
                 timeLeft = 20;
                 count = 0;
-                timer.setText("Time: " + timeLeft);
-                counter.setText("Clicks: " + count);
+                timer.setText(timeLeft + "s");
+                counter.setText(count.toString());
                 counterBtn1.setTranslationX(0);
                 counterBtn1.setTranslationY(0);
                 counterBtn2.setTranslationX(0);
@@ -138,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                     screenWidth = root.getWidth();
                     screenHeight = root.getHeight();
 
-                    // Log the screen dimensions to check
+                    // log the screen dimensions to check
                     Log.d("ButtonHandler", "Screen Width: " + screenWidth + ", Screen Height: " + screenHeight);
                 }
             });
@@ -203,22 +208,19 @@ public class MainActivity extends AppCompatActivity {
             int randInt = (int) (Math.random() * 2 + 1); // Generates either 1 or 2
 
             if (randInt == 1) {
-                // Disable button1 and prevent it from capturing clicks
+
                 button1.setEnabled(false);
                 button1.setClickable(false);
-                button1.setFocusable(false); // Optionally, make it non-focusable
+                button1.setFocusable(false);
 
-                // Enable button2 and bring it to the front
                 button2.setEnabled(true);
                 button2.setClickable(true);
                 button2.setFocusable(true);
             } else {
-                // Disable button2 and prevent it from capturing clicks
                 button2.setEnabled(false);
                 button2.setClickable(false);
-                button2.setFocusable(false); // Optionally, make it non-focusable
+                button2.setFocusable(false);
 
-                // Enable button1 and bring it to the front
                 button1.setEnabled(true);
                 button1.setClickable(true);
                 button1.setFocusable(true);

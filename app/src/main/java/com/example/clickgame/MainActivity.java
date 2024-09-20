@@ -1,10 +1,12 @@
 package com.example.clickgame;
 
 import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,32 +14,39 @@ import androidx.appcompat.app.AppCompatActivity;
 public class MainActivity extends AppCompatActivity {
 
     Button counterBtn1, counterBtn2, startBtn;
-    TextView timer, counter, highScore;
-
-    Integer timeLeft=20, count=0, firstScore=-1, newScore;
+    TextView timer, counter, highScoreTV;
+    Integer timeLeft = 20, count = 0, score = -1;
 
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
-        counterBtn1=findViewById(R.id.counterBtn1);
-        counterBtn2=findViewById(R.id.counterBtn2);
-        startBtn=findViewById(R.id.startBtn);
-        timer=findViewById(R.id.timer);
-        counter=findViewById(R.id.counter);
-        highScore=findViewById(R.id.highScore);
+
+        counterBtn1 = findViewById(R.id.counterBtn1);
+        counterBtn2 = findViewById(R.id.counterBtn2);
+        startBtn = findViewById(R.id.startBtn);
+        timer = findViewById(R.id.timer);
+        counter = findViewById(R.id.counter);
+        highScoreTV = findViewById(R.id.highScore);
 
         counterBtn1.setEnabled(false);
         counterBtn2.setEnabled(false);
 
-        CountDownTimer time = new CountDownTimer(20000,1000) {
+        // get high score from shared preferences
+        SharedPreferences sharedPreferences = getSharedPreferences("MyPreferences", MODE_PRIVATE);
+        int highScore = sharedPreferences.getInt("highScore", 0);
+        highScoreTV.setText("High Score: " + highScore);
+
+        // create button handler class
+        ButtonHandler buttonHandler = new ButtonHandler(counterBtn1.getRootView(), counterBtn1, counterBtn2);
+
+        CountDownTimer time = new CountDownTimer(20000, 1000) {
             @SuppressLint("SetTextI18n")
             @Override
             public void onTick(long l) {
                 timeLeft--;
-                timer.setText("Time: "+timeLeft+"s");
+                timer.setText("Time: " + timeLeft + "s");
             }
 
             @SuppressLint("SetTextI18n")
@@ -46,15 +55,21 @@ public class MainActivity extends AppCompatActivity {
                 counterBtn1.setEnabled(false);
                 counterBtn2.setEnabled(false);
                 startBtn.setEnabled(true);
+                startBtn.setVisibility(View.VISIBLE);
 
-                //done to seperate the string from count value int
+                // parse clicks from counter to get score int
                 String counterText = counter.getText().toString();
                 String[] parts = counterText.split("Clicks: ");
-                newScore = Integer.parseInt(parts[1].trim());
+                int newScore = Integer.parseInt(parts[1].trim());
 
-                if (firstScore == -1 || newScore > firstScore) {
-                    firstScore = newScore;
-                    highScore.setText("High Score: " + firstScore);
+                if (score == -1 || newScore > score) {
+                    score = newScore;
+                    highScoreTV.setText("High Score: " + newScore);
+
+                    // set score to shared preferences
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putInt("highScore", score);
+                    editor.apply();
                 }
             }
         };
@@ -63,153 +78,141 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View view) {
-
-                boolean overlap;
-                int randomX, randomY;
-
-                // Get the screen dimensions
-                View root = counterBtn1.getRootView();
-                int screenWidth = root.getWidth();
-                int screenHeight = root.getHeight();
-
-                // Get button size
-                int buttonWidth = counterBtn1.getWidth();
-                int buttonHeight = counterBtn1.getHeight();
-
-                do {
-                    // Calculate the maximum random values for X and Y with a 30px buffer
-                    int maxX = screenWidth - buttonWidth - 50;
-                    int maxY = screenHeight - buttonHeight - 50;
-
-                    // Generate random X and Y positions within screen bounds, considering the buffer zone
-                    randomX = (int) (Math.random() * maxX) - (maxX / 2);
-                    randomY = (int) (Math.random() * maxY) - (maxY / 2);
-
-                    // Ensure the position is at least 30px away from the edge
-                    if (randomX < 50) randomX = 50;
-                    if (randomY < 50) randomY = 50;
-
-                    // Get the current location of the second button
-                    int btn2X = (int) counterBtn2.getX();
-                    int btn2Y = (int) counterBtn2.getY();
-
-                    // Check for overlap with counterBtn2
-                    overlap = (btn2X == randomX && btn2Y == randomY);
-
-                    if (overlap) {
-                        Log.d("OverlapCheck", "Overlap detected!");
-                    }
-                } while (overlap); // Keep generating new random positions until there's no overlap
-
-                // Move the button to the new random position
-                counterBtn1.animate()
-                        .translationX(randomX)
-                        .translationY(randomY)
-                        .setDuration(250)
-                        .start();
-
-                // Randomly enable or disable buttons
-                int randInt = (int) (Math.random() * 2 + 1);
-
-                if (randInt == 1) {
-                    counterBtn1.setEnabled(false);
-                    counterBtn2.setEnabled(true);
-                } else {
-                    counterBtn1.setEnabled(true);
-                    counterBtn2.setEnabled(false);
-                }
-
+                buttonHandler.moveBtn(counterBtn1);
+                buttonHandler.toggleBtn(); //doesnt need to be passed in since btn1 always starts off enabled
                 count++;
                 counter.setText("Clicks: " + count);
             }
         });
-
 
         counterBtn2.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View view) {
-                boolean overlap;
-                int randomX, randomY;
-
-                // Get the screen dimensions
-                View root = counterBtn2.getRootView();
-                int screenWidth = root.getWidth();
-                int screenHeight = root.getHeight();
-
-                // Get button size
-                int buttonWidth = counterBtn2.getWidth();
-                int buttonHeight = counterBtn2.getHeight();
-
-                do {
-                    // Calculate the maximum random values for X and Y with a 30px buffer
-                    int maxX = screenWidth - buttonWidth - 50;
-                    int maxY = screenHeight - buttonHeight - 50;
-
-                    // Generate random X and Y positions within screen bounds, considering the buffer zone
-                    randomX = (int) (Math.random() * maxX) - (maxX / 2);
-                    randomY = (int) (Math.random() * maxY) - (maxY / 2);
-
-                    // Ensure the position is at least 30px away from the edge
-                    if (randomX < 50) randomX = 50;
-                    if (randomY < 50) randomY = 50;
-
-                    // Get the current location of the first button
-                    int btn1X = (int) counterBtn1.getX();
-                    int btn1Y = (int) counterBtn1.getY();
-
-                    // Check for overlap with counterBtn1
-                    overlap = (btn1X == randomX && btn1Y == randomY);
-
-                    if (overlap) {
-                        Log.d("OverlapCheck", "Overlap detected!");
-                    }
-                } while (overlap); // Keep generating new random positions until there's no overlap
-
-                // Move the button to the new random position
-                counterBtn2.animate()
-                        .translationX(randomX)
-                        .translationY(randomY)
-                        .setDuration(250)
-                        .start();
-
-                // Randomly enable or disable buttons
-                int randInt = (int) (Math.random() * 2 + 1);
-
-                if (randInt == 1) {
-                    counterBtn1.setEnabled(false);
-                    counterBtn2.setEnabled(true);
-                } else {
-                    counterBtn1.setEnabled(true);
-                    counterBtn2.setEnabled(false);
-                }
-
+                buttonHandler.moveBtn(counterBtn2);
+                buttonHandler.toggleBtn();
                 count++;
                 counter.setText("Clicks: " + count);
             }
         });
 
-
-
-
+        // Set click listener for startBtn
         startBtn.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View view) {
-
                 time.start();
                 startBtn.setEnabled(false);
+                startBtn.setVisibility(View.INVISIBLE);
                 counterBtn1.setEnabled(true);
-                timeLeft=20;
-                count=0;
-                timer.setText("Time: "+timeLeft);
-                counter.setText("Number of clicks: "+count);
-                counterBtn1.setTranslationX(0); //reset buttons back to original
+                timeLeft = 20;
+                count = 0;
+                timer.setText("Time: " + timeLeft);
+                counter.setText("Clicks: " + count);
+                counterBtn1.setTranslationX(0);
                 counterBtn1.setTranslationY(0);
                 counterBtn2.setTranslationX(0);
                 counterBtn2.setTranslationY(0);
             }
         });
+    }
 
+    // define button handler class
+    public class ButtonHandler {
+        private View root;
+        private Button button1, button2;
+        private int screenWidth, screenHeight;
+
+        public ButtonHandler(View root, Button button1, Button button2) {
+            this.root = root;
+            this.button1 = button1;
+            this.button2 = button2;
+
+            root.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    // Remove the listener to prevent multiple calls
+                    root.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                    // Now you can get the width and height
+                    screenWidth = root.getWidth();
+                    screenHeight = root.getHeight();
+
+                    // Log the screen dimensions to check
+                    Log.d("ButtonHandler", "Screen Width: " + screenWidth + ", Screen Height: " + screenHeight);
+                }
+            });
+        }
+
+        public void moveBtn(Button button) {
+            boolean overlap;
+            int randomX, randomY;
+
+            int buttonWidth = button.getWidth();
+            int buttonHeight = button.getHeight();
+
+            int xLocation = (int) button.getX();
+            int yLocation = (int) button.getY();
+
+            // Get the position of the other button
+            int otherBtnX = (int) (button == button1 ? button2.getX() : button1.getX());
+            int otherBtnY = (int) (button == button1 ? button2.getY() : button1.getY());
+            Log.d("ButtonHandler", "Other button position: " + otherBtnX + ", " + otherBtnY);
+
+            do {
+                overlap = false;
+                // Generate random X and Y positions within screen bounds
+                randomX = (int) (Math.random() * (screenWidth - buttonWidth - xLocation));
+                randomY = (int) (Math.random() * (screenHeight - buttonHeight - yLocation));
+
+                // Ensure the button stays within screen bounds
+                if (randomX + buttonWidth > screenWidth) {
+                    randomX = screenWidth - buttonWidth;
+                    Log.d("ButtonHandler", "X out of bound");
+                }
+                if (randomY + buttonHeight > screenHeight) {
+                    randomY = screenHeight - buttonHeight;
+                    Log.d("ButtonHandler", "Y out of bound");
+                }
+                // Check for overlap
+                if (isOverlapping(randomX, randomY, buttonWidth, buttonHeight, otherBtnX, otherBtnY, buttonWidth, buttonHeight)) {
+                    overlap = true;
+                    Log.d("ButtonHandler", "Overlap detected, recalculating...");
+                }
+
+            } while (overlap); // Repeat until no overlap is found
+
+            // Animate the button to the new random position
+            button.animate()
+                    .translationX(randomX)
+                    .translationY(randomY)
+                    .rotationBy(360)
+                    .setDuration(100)
+                    .start();
+            Log.d("ButtonHandler", "New position: " + button.getX() + ", " + button.getY());
+        }
+        // Function to check if two buttons overlap
+        private boolean isOverlapping(int x1, int y1, int width1, int height1, int x2, int y2, int width2, int height2) {
+            return !(x1 + width1 < x2 || // Completely to the left
+                    x1 > x2 + width2 || // Completely to the right
+                    y1 + height1 < y2 || // Completely above
+                    y1 > y2 + height2);  // Completely below
+        }
+
+        public void toggleBtn() {
+            int randInt = (int) (Math.random() * 2 + 1); //scales range from 0-1 to 2, adds 1 to shift to 1-3
+            if (randInt == 1) {
+                button1.setEnabled(false);
+                button2.setEnabled(true);
+                button2.setZ(1000); //set z index to be on top
+            } else {
+                button1.setEnabled(true);
+                button2.setEnabled(false);
+                button1.setZ(1000);
+            }
+        }
     }
 }
+
+
+

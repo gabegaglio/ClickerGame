@@ -200,15 +200,28 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void toggleBtn() {
-            int randInt = (int) (Math.random() * 2 + 1); //scales range from 0-1 to 2, adds 1 to shift to 1-3
+            int randInt = (int) (Math.random() * 2 + 1); // Generates either 1 or 2
+
             if (randInt == 1) {
+                // Disable button1 and prevent it from capturing clicks
                 button1.setEnabled(false);
+                button1.setClickable(false);
+                button1.setFocusable(false); // Optionally, make it non-focusable
+
+                // Enable button2 and bring it to the front
                 button2.setEnabled(true);
-                button2.setZ(1000); //set z index to be on top
+                button2.setClickable(true);
+                button2.setFocusable(true);
             } else {
-                button1.setEnabled(true);
+                // Disable button2 and prevent it from capturing clicks
                 button2.setEnabled(false);
-                button1.setZ(1000);
+                button2.setClickable(false);
+                button2.setFocusable(false); // Optionally, make it non-focusable
+
+                // Enable button1 and bring it to the front
+                button1.setEnabled(true);
+                button1.setClickable(true);
+                button1.setFocusable(true);
             }
         }
     }

@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
             android:gravity="center"
-            android:text="Time: 20s"
+            android:text="20s"
             android:textColor="#FFFFFF"
             android:textSize="30sp" />
 
@@ -41,7 +41,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
             android:gravity="center"
-            android:text="Clicks: 0"
+            android:text="0"
             android:textColor="#FFFFFF"
             android:textSize="30sp" />
 

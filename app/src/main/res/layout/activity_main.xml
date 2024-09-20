@@ -52,6 +52,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="60dp"
             android:gravity="center"
+            android:hapticFeedbackEnabled="true"
             android:text="+"
             android:textColor="#FFFFFF"
             android:textSize="30sp" />
@@ -63,6 +64,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="60dp"
             android:gravity="center"
+            android:hapticFeedbackEnabled="true"
             android:text="+"
             android:textColor="#FFFFFF"
             android:textSize="30sp" />
@@ -74,6 +76,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="140dp"
             android:gravity="center"
+            android:hapticFeedbackEnabled="true"
             android:text="Start"
             android:textColor="#FFFFFF"
             android:textSize="30sp" />
